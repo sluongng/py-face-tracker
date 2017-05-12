@@ -33,3 +33,6 @@
 - [How to Identify Faces in Image - Microsoft](https://docs.microsoft.com/en-us/azure/cognitive-services/face/face-api-how-to-topics/howtoidentifyfacesinimage)
 
 - [Tutorial code for Python27 + OpenCV3 Facial Recognigtion - Github](https://github.com/shantnu/Webcam-Face-Detect)
+
+- [Face API Swagger](https://southeastasia.dev.cognitive.microsoft.com/docs/services/563879b61984550e40cbbe8d/export?DocumentFormat=Swagger&ApiName=Face%20API%20-%20V1.0) (use to import to postman for testing)
+
