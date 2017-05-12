@@ -1,6 +1,6 @@
 # Attendance-Tracking
 
-## Summary findings: (may be used for README.md)
+## Summary findings:
 
 1. Capture pictures (crawler/mining ?)
 
