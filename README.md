@@ -1,6 +1,6 @@
 # Attendance-Tracking
 
-## Summary findings:
+## Phases Overview
 
 1. Capture pictures (crawler/mining ?)
 
