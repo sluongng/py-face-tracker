@@ -1,11 +1,18 @@
 import cv2
 import sys
 import os
+import json
 
-outPath = os.getcwd() + "\\out"
 
-cascPath = "haarcascade_frontalface_default.xml"
-faceCascade = cv2.CascadeClassifier(cascPath)
+class ImgSize:
+    def __init__(self, w=0, h=0):
+        self.width = w
+        self.height = h
+
+OUT_PATH = os.path.join(os.getcwd(), "out")
+
+CASC_PATH = "haarcascade_frontalface_default.xml"
+FACE_CASCADE = cv2.CascadeClassifier(CASC_PATH)
 
 # CONST_ScaleFactor Parameter specifying how much the image size is
 # reduced at each image scale.
@@ -19,56 +26,86 @@ faceCascade = cv2.CascadeClassifier(cascPath)
 # cascading window/rectangle size by 5%
 #
 # Recommended value is 1.05
-CONST_ScaleFactor = 1.1
+SCALE_FACTOR = 1.1725
 
 # CONST_MinNeighbors Parameter specifying how many neighbors each
 # candidate rectangle should have to retain it.
 #
 # Recommended value is 3~6
-CONST_MinNeighbors = 4
+MIN_NEIGHBORS = 3
 
 # CONST_MinSize Parameter specifying Minimum possible object size
 #
 # Recommended value is 30x30
-CONST_MinSizeW = 50
-CONST_MinSizeH = 50
+MIN_SIZE = ImgSize(100, 100)
 
 
 def detect_face_func(image_path):
+    out_json = {}
+
     image = cv2.imread(image_path)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    faces = faceCascade.detectMultiScale(
+    faces = FACE_CASCADE.detectMultiScale(
         gray,
-        scaleFactor=CONST_ScaleFactor,
-        minNeighbors=CONST_MinNeighbors,
-        minSize=(CONST_MinSizeW, CONST_MinSizeH)
+        scaleFactor=SCALE_FACTOR,
+        minNeighbors=MIN_NEIGHBORS,
+        minSize=(MIN_SIZE.width, MIN_SIZE.height)
     )
 
-    for index, (x, y, w, h) in enumerate(faces):
+    out_json["name"] = os.path.basename(image_path)
+    out_json["faces"] = []
+    out_json["avg_face_size"] = {}
 
-        # Draw rectangle around detected face
-        #
-        # cv2.rectangle(
-        #     image,
-        #     (x, y),
-        #     (x + w, y + h),
-        #     (0, 255, 0),
-        #     2
-        # )
+    face_count = len(faces)
+    total_faces_size = ImgSize()
 
-        out_name = outPath + "\\face_" + repr(index) + ".jpg"
+    if face_count > 0:
 
-        # DEBUG
-        # print "Writing to " + out_name
+        for index, (x, y, w, h) in enumerate(faces):
 
-        cv2.imwrite(out_name, image[y: y+h, x: x+w])
-    return
+            total_faces_size.width += w
+            total_faces_size.height += h
+
+            face_name = "face_" + repr(index) + ".jpg"
+
+            face_json = {}
+            face_json["name"] = face_name
+            face_json["position"] = {}
+            face_json["position"]["x"] = x
+            face_json["position"]["y"] = y
+            face_json["size"] = {}
+            face_json["size"]["width"] = w
+            face_json["size"]["height"] = h
+
+            out_json["faces"].append(face_json)
+
+            # Draw rectangle around detected face
+            #
+            # cv2.rectangle(
+            #     image,
+            #     (x, y),
+            #     (x + w, y + h),
+            #     (0, 255, 0),
+            #     2
+            # )
+
+            out_name = os.path.join(OUT_PATH, face_name)
+
+            # DEBUG
+            # print "Writing to " + out_name
+
+            cv2.imwrite(out_name, image[y: y+h, x: x+w])
+
+        out_json["avg_face_size"]["width"] = total_faces_size.width / face_count
+        out_json["avg_face_size"]["height"] = total_faces_size.height / face_count
+
+    return json.dumps(out_json)
 
 
 # Clean up the output folder
 def clean_output_directory():
-    for file in os.listdir(outPath):
-        path = os.path.join(outPath, file)
+    for file_name in os.listdir(OUT_PATH):
+        path = os.path.join(OUT_PATH, file_name)
         try:
             if os.path.isfile(path):
                 os.unlink(path)
@@ -77,4 +114,4 @@ def clean_output_directory():
             print (e)
 
 clean_output_directory()
-detect_face_func(sys.argv[1])
+print detect_face_func(sys.argv[1])
